@@ -32,12 +32,10 @@ import java.math.BigInteger
  *
  *
  * @param tag    Tag or Identifier
- * @param length Length of the field
  * @param value  Encoded octet string for the field.
  */
 open class Asn1Object(
     private val tag: Int,
-    private val length: Int,
     private val value: ByteArray
 ) {
     val type: Int = tag and 0x1F
@@ -88,10 +86,18 @@ open class Asn1Object(
         get() {
             val encoding =
                 when (type) {
-                    DerParser.NUMERIC_STRING, DerParser.PRINTABLE_STRING, DerParser.VIDEOTEX_STRING, DerParser.IA5_STRING, DerParser.GRAPHIC_STRING, DerParser.ISO646_STRING, DerParser.GENERAL_STRING -> "ISO-8859-1" // $NON-NLS-1$
+                    DerParser.NUMERIC_STRING,
+                    DerParser.PRINTABLE_STRING,
+                    DerParser.VIDEOTEX_STRING,
+                    DerParser.IA5_STRING,
+                    DerParser.GRAPHIC_STRING,
+                    DerParser.ISO646_STRING,
+                    DerParser.GENERAL_STRING -> "ISO-8859-1" // $NON-NLS-1$
                     DerParser.BMP_STRING -> "UTF-16BE" // $NON-NLS-1$
                     DerParser.UTF8_STRING -> "UTF-8" // $NON-NLS-1$
-                    DerParser.UNIVERSAL_STRING -> throw IOException("Invalid DER: can't handle UCS-4 string") // $NON-NLS-1$
+                    DerParser.UNIVERSAL_STRING -> {
+                        throw IOException("Invalid DER: can't handle UCS-4 string")
+                    } // $NON-NLS-1$
                     else -> throw IOException("Invalid DER: object is not a string") // $NON-NLS-1$
                 }
             return String(value, charset(encoding))

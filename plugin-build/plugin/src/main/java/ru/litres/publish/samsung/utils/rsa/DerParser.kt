@@ -35,19 +35,20 @@ import java.math.BigInteger
  *
  * @author zhang
  */
+@Suppress("MagicNumber")
 open class DerParser
 /**
  * Create a new DER decoder from an input stream.
  *
- * @param in The DER encoded stream
- */(private var `in`: InputStream) {
+ * @param input The DER encoded stream
+ */(private var input: InputStream) {
     /**
      * Create a new DER decoder from a byte array.
      *
      * @param The encoded bytes
      * @throws IOException
      */
-    constructor(bytes: ByteArray?) : this(ByteArrayInputStream(bytes)) {}
+    constructor(bytes: ByteArray?) : this(ByteArrayInputStream(bytes))
 
     /**
      * Read next object. If it's constructed, the value holds
@@ -59,13 +60,13 @@ open class DerParser
      */
     @Throws(IOException::class)
     fun read(): Asn1Object {
-        val tag = `in`.read()
+        val tag = input.read()
         if (tag == -1) throw IOException("Invalid DER: stream too short, missing tag") // $NON-NLS-1$
         val length = length
         val value = ByteArray(length)
-        val n = `in`.read(value)
+        val n = input.read(value)
         if (n < length) throw IOException("Invalid DER: stream too short, missing value") // $NON-NLS-1$
-        return Asn1Object(tag, length, value)
+        return Asn1Object(tag, value)
     } // $NON-NLS-1$
 
     // $NON-NLS-1$
@@ -97,7 +98,7 @@ open class DerParser
     @get:Throws(IOException::class)
     private val length: Int
         get() {
-            val i = `in`.read()
+            val i = input.read()
             if (i == -1) throw IOException("Invalid DER: length missing") // $NON-NLS-1$
 
             // A single byte short length
@@ -107,7 +108,7 @@ open class DerParser
             // We can't handle length longer than 4 bytes
             if (i >= 0xFF || num > 4) throw IOException("Invalid DER: length field too big ( $i )") // $NON-NLS-1$
             val bytes = ByteArray(num)
-            val n = `in`.read(bytes)
+            val n = input.read(bytes)
             if (n < num) throw IOException("Invalid DER: length too short") // $NON-NLS-1$
             return BigInteger(1, bytes).toInt()
         }
