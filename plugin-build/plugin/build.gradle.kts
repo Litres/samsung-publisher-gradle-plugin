@@ -24,7 +24,7 @@ gradlePlugin {
         create(property("ID").toString()) {
             id = property("ID").toString()
             implementationClass = property("IMPLEMENTATION_CLASS").toString()
-            version =  System.getenv("RELEASE_VERSION") ?: property("VERSION").toString()
+            version = System.getenv("RELEASE_VERSION") ?: property("VERSION").toString()
             displayName = property("DISPLAY_NAME").toString()
         }
     }
