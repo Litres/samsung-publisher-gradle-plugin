@@ -17,7 +17,6 @@ class PublishBuildUseCase(
     private val uploadNetworkClient: NetworkClient = NetworkClient(UPLOAD_API_BASE_URL),
     private val jwtGenerator: JwtGenerator = JwtGenerator()
 ) {
-
     operator fun invoke(
         serviceId: String,
         privateKey: String,
@@ -46,7 +45,6 @@ class PublishBuildUseCase(
             println("-------- Error while updating apk ----------")
         }
     }
-
 
     private fun Directory.findApkFile(): File {
         return this.asFileTree.find { it.extension == "apk" }

@@ -4,7 +4,6 @@ kotlin = "1.7.20"
 ktlintGradle = "11.0.0"
 pluginPublish = "1.0.0"
 versionCheck = "0.42.0"
-coroutines = "1.6.4"
 kotlinx_serialization_plugin = "1.7.20"
 kotlinx_serialization = "1.4.0"
 fuel = "2.3.1"
@@ -22,7 +21,6 @@ serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref 
 [libraries]
 junit = "junit:junit:4.13.2"
 
-coroutines_core = { module =  "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 serialization_json = { module =  "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization" }
 
 fuel_core = { module =  "com.github.kittinunf.fuel:fuel", version.ref = "fuel" }
@@ -34,7 +32,6 @@ jjwt_jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 
 [bundles]
-coroutines = [ "coroutines_core" ]
 fuel = [ "fuel_core", "fuel_serialization", "serialization_json" ]
 jjwt_runtime = [ "jjwt_impl", "jjwt_jackson" ]
 
