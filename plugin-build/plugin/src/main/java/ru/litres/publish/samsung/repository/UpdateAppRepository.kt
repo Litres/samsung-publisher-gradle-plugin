@@ -68,8 +68,8 @@ class UpdateAppRepository(
 
     private fun updateApplication(fileKey: String, publishSetting: PublishSetting): Boolean {
         val contentId = publishSetting.contentId ?: return false
-        val paid = if (publishSetting.paid) "Y" else "N"
-        val gms = if (publishSetting.hasGoogleService) "Y" else "N"
+        val paid = if (publishSetting.paid) YES_FIELD else NO_FIELD
+        val gms = if (publishSetting.hasGoogleService) YES_FIELD else NO_FIELD
 
         val data = UpdateDataRequest(
             contentId,
@@ -105,5 +105,8 @@ class UpdateAppRepository(
 
         private const val KB_DIVIDER = 1024
         private const val PERCENT_MULTIPLIER = 100
+
+        private const val YES_FIELD = "Y"
+        private const val NO_FIELD = "N"
     }
 }
