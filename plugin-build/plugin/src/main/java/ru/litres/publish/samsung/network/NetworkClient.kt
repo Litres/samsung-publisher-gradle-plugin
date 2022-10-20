@@ -6,6 +6,8 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.Parameters
+import com.github.kittinunf.fuel.core.interceptors.LogRequestInterceptor
+import com.github.kittinunf.fuel.core.interceptors.LogResponseInterceptor
 
 class NetworkClient(
     baseUrl: String
@@ -15,6 +17,13 @@ class NetworkClient(
 
     private val fuelManager = FuelManager().apply {
         basePath = baseUrl
+        this.timeoutInMillisecond = TIMEOUT
+        this.timeoutReadInMillisecond = TIMEOUT
+    }
+
+    init {
+        addRequestInterceptor(LogRequestInterceptor)
+        addResponseInterceptor(LogResponseInterceptor)
     }
 
     fun get(
@@ -31,11 +40,6 @@ class NetworkClient(
         path: String,
         parameters: Parameters?
     ) = fuelManager.upload(path, Method.POST, parameters)
-
-    fun setCommonHeaders(headers: Map<String, String>?) {
-        fuelManager.baseHeaders = headers
-        authToken?.let { setBearerAuth(it) }
-    }
 
     fun appendCommonHeaders(headers: Map<String, String>) {
         val prevHeaders = fuelManager.baseHeaders?.toMutableMap() ?: mutableMapOf()
@@ -56,5 +60,9 @@ class NetworkClient(
 
     fun addResponseInterceptor(responseInterceptor: FoldableResponseInterceptor) {
         fuelManager.addResponseInterceptor(responseInterceptor)
+    }
+
+    companion object {
+        private const val TIMEOUT = 120_000
     }
 }

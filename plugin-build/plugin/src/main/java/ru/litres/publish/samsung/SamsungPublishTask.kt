@@ -1,6 +1,5 @@
 package ru.litres.publish.samsung
 
-import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
@@ -22,18 +21,15 @@ abstract class SamsungPublishTask : DefaultTask() {
     abstract val serviceAccountId: Property<String>
 
     @get:Input
-    abstract val contentId: Property<String>
+    abstract var publishSetting: PublishSetting
 
     @Suppress("ThrowsCount")
     @TaskAction
     fun publish() {
         val key = privateKey.orNull ?: throw NotFoundRequiredField("privateKey")
         val serviceId = serviceAccountId.orNull ?: throw NotFoundRequiredField("serviceAccountId")
-        val appId = contentId.orNull ?: throw NotFoundRequiredField("contentId")
         val folderWithApk = artifactDir.orNull ?: throw NotFoundRequiredField("artifactDir")
-
-        runBlocking {
-            PublishBuildUseCase().invoke(serviceId, key, appId, folderWithApk)
-        }
+        if (publishSetting.contentId == null) throw NotFoundRequiredField("contentId")
+        PublishBuildUseCase().invoke(serviceId, key, folderWithApk, publishSetting)
     }
 }
