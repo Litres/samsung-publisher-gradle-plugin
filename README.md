@@ -1,7 +1,7 @@
 # Samsung publisher gradle plugin
 
 Samsung publisher gradle plugin is Android's unofficial release automation Gradle Plugin.
-It helps you automate uploading apk to samsung store. **The plugin does not send for review yet, it just downloads the apk**
+It helps you automate uploading of apk to samsung store. **The plugin haven't sent for review yet, it just downloads the apk**
 
 
 ## Quick start guide
@@ -10,8 +10,8 @@ It helps you automate uploading apk to samsung store. **The plugin does not send
 Follow to [Samsung store](https://developer.samsung.com/galaxy-store/galaxy-store-developer-api/create-an-access-token.html#Create-a-service-account) and create service account with "Publishing & ITEM" permission.
 Save `Private Key` and `Service Account ID`
 
-Next, open [application list](https://seller.samsungapps.com/main/sellerMain.as) and click on application.
-You will see link like that `https://seller.samsungapps.com/application/main.as?contentId=000000000000`.
+Next, open the [application list](https://seller.samsungapps.com/main/sellerMain.as) and click on application.
+You will see a link like that `https://seller.samsungapps.com/application/main.as?contentId=000000000000`.
 Save `contentId` from link
 
 ### Installation
@@ -101,9 +101,9 @@ samsungPublishConfig {
 ## PublishSetting fields
 
 
-| Field |  Type   |                                                Description                                                   | Default value |
-| :---   |:-------:|:------------------------------------------------------------------------------------------------------------------:|--------------:|
-| contentId | String  |                                         Application id which you get from url                                      |             - |
-| defaultLanguageCode  | String  |  The language in which you provide application information. See [Language codes](https://developer.samsung.com/galaxy-store/galaxy-store-developer-api/content-publish-api-reference.html#publish-content-api-added-language-codes) for a list of supported languages.  |           "RUS" |
-| paid  | Boolean |  Whether or not app download requires a user payment    |         false |
-| hasGoogleService  | Boolean |  Whether or not the app provides the user with any Google™ services    |          true |
+| Field |  Type   |                                                                                                                              Description                                                                                                                              | Default value |
+| :---   |:-------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|--------------:|
+| contentId | String  |                                                                                                                 Application id which you get from url                                                                                                                 |             - |
+| defaultLanguageCode  | String  | The language in which you provide application information. See [Language codes](https://developer.samsung.com/galaxy-store/galaxy-store-developer-api/content-publish-api-reference.html#publish-content-api-added-language-codes) for a list of supported languages. |           "RUS" |
+| paid  | Boolean |                                                                                                             Whether app download requires a user payment                                                                                                              |         false |
+| hasGoogleService  | Boolean |                                                                                                      Whether the app provides the user with any Google™ services                                                                                                      |          true |
