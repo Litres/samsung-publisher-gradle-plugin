@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApkFile(
     val filekey: String,
-    val gms: String = "Y"
+    val gms: String
 )

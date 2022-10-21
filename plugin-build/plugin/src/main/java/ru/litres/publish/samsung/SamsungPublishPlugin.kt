@@ -16,7 +16,7 @@ class SamsungPublishPlugin : Plugin<Project> {
             it.artifactDir.set(extension.artifactDir)
             it.privateKey.set(extension.privateKey)
             it.serviceAccountId.set(extension.serviceAccountId)
-            it.contentId.set(extension.contentId)
+            it.publishSetting = extension.publishSetting
         }
     }
 }

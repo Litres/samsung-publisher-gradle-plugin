@@ -4,10 +4,15 @@ plugins {
 }
 
 samsungPublishConfig {
-    privateKey.set("-----BEGIN RSA PRIVATE KEY-----\n" +
-        ".............................................\n" +
-        "-----END RSA PRIVATE KEY-----\n")
+    privateKey.set(
+        "-----BEGIN RSA PRIVATE KEY-----\n" +
+            "....\n" +
+            "......\n" +
+            "-----END RSA PRIVATE KEY-----"
+    )
     artifactDir.set(File(""))
-    serviceAccountId.set("......")
-    contentId.set("......")
+    serviceAccountId.set("....")
+    publishSetting {
+        contentId = "..."
+    }
 }

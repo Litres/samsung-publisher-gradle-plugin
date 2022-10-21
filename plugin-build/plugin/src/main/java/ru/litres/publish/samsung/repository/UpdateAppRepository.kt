@@ -2,12 +2,11 @@ package ru.litres.publish.samsung.repository
 
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
 import com.github.kittinunf.fuel.serialization.kotlinxDeserializerOf
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonArray
-import org.gradle.api.file.Directory
+import kotlinx.serialization.json.jsonObject
+import ru.litres.publish.samsung.PublishSetting
 import ru.litres.publish.samsung.exception.UploadApkException
 import ru.litres.publish.samsung.models.update.ApkFile
 import ru.litres.publish.samsung.models.update.UpdateDataRequest
@@ -23,29 +22,21 @@ class UpdateAppRepository(
     private val uploadNetworkClient: NetworkClient
 ) {
 
-    suspend fun update(contentId: String, pathToFolderWithApk: Directory): Boolean {
+    fun update(apk: File, publishSetting: PublishSetting): Boolean {
         val sessionId = getUploadSessionId()
-        val fileKey = uploadApk(sessionId, pathToFolderWithApk.findApkFile())
-        return updateApplication(contentId, fileKey)
+        val fileKey = uploadApk(sessionId, apk)
+        return updateApplication(fileKey, publishSetting)
     }
 
-    private fun Directory.findApkFile(): File {
-        return this.asFileTree.find { it.extension == "apk" }
-            ?: throw UploadApkException("Apk file not found in folder \"${this.asFile.absolutePath}\"")
-    }
-
-    private suspend fun getUploadSessionId(): String {
+    private fun getUploadSessionId(): String {
         val sessionResult = networkClient.post(CREATE_UPLOAD_SESSION)
-            .awaitObjectResponse<UploadSessionResponse>(kotlinxDeserializerOf())
+            .responseObject<UploadSessionResponse>(kotlinxDeserializerOf())
 
-        return sessionResult.third.sessionId
+        return sessionResult.third.get().sessionId
             ?: throw UploadApkException("Field \"sessionId\" not found in \"/seller/createUploadSessionId\"")
     }
 
-    private suspend fun uploadApk(sessionId: String, file: File): String {
-        println("------ Found apk -------")
-        println(file.absolutePath)
-        println("------ Found apk -------")
+    private fun uploadApk(sessionId: String, file: File): String {
         var prevProgress = 0
         val uploadResult = uploadNetworkClient.upload(UPLOAD_APK, listOf(SESSION_ID_FIELD to sessionId))
             .add { FileDataPart(file, name = "file") }
@@ -58,26 +49,50 @@ class UpdateAppRepository(
                 }
                 prevProgress = progress
             }
-            .awaitObjectResponse<UploadResponse>(kotlinxDeserializerOf())
-        val uploadResponse = uploadResult.third
+            .responseObject<UploadResponse>(kotlinxDeserializerOf())
 
-        if (uploadResponse.errorMsg != null) throw UploadApkException(uploadResponse.errorMsg)
-        return uploadResult.third.fileKey
-            ?: throw UploadApkException("Field \"fileKey\" not found in \"/galaxyapi/fileUpload\"")
+        val uploadResponse = uploadResult.third.fold(
+            success = { it },
+            failure = { error ->
+                println(error)
+                println(error.errorData.decodeToString())
+                null
+            }
+        )
+
+        if (uploadResponse?.errorMsg != null) throw UploadApkException(uploadResponse.errorMsg)
+        val key = uploadResponse?.fileKey
+        if (key.isNullOrBlank()) throw UploadApkException("Field \"fileKey\" not found in \"/galaxyapi/fileUpload\"")
+        return key
     }
 
-    private suspend fun updateApplication(contentId: String, fileKey: String): Boolean {
-        val data = listOf(UpdateDataRequest(contentId, listOf(ApkFile(fileKey))))
+    private fun updateApplication(fileKey: String, publishSetting: PublishSetting): Boolean {
+        val contentId = publishSetting.contentId ?: return false
+        val paid = if (publishSetting.paid) YES_FIELD else NO_FIELD
+        val gms = if (publishSetting.hasGoogleService) YES_FIELD else NO_FIELD
+
+        val data = UpdateDataRequest(
+            contentId,
+            listOf(ApkFile(fileKey, gms)),
+            publishSetting.defaultLanguageCode,
+            paid
+        )
         val json = Json.encodeToJsonElement(data)
 
         val updateResult = networkClient.post(UPDATE_APPLICATION)
-            .jsonBody(json.jsonArray.toString())
-            .awaitObjectResponse<UpdateDataResponse>(kotlinxDeserializerOf())
+            .jsonBody(json.jsonObject.toString())
+            .responseObject<UpdateDataResponse>(kotlinxDeserializerOf())
 
-        val updateResponse = updateResult.third
-        if (updateResponse.errorMsg != null) throw UploadApkException(updateResponse.errorMsg)
+        val updateResponse = updateResult.third.fold(
+            success = { it },
+            failure = {
+                println(it.errorData.decodeToString())
+                null
+            }
+        )
+        if (updateResponse?.errorMsg != null) throw UploadApkException(updateResponse.errorMsg)
 
-        return updateResponse.contentStatus == SUCCESS_UPDATE_APK_RESULT
+        return updateResponse?.contentStatus == SUCCESS_UPDATE_APK_RESULT
     }
 
     companion object {
@@ -90,5 +105,8 @@ class UpdateAppRepository(
 
         private const val KB_DIVIDER = 1024
         private const val PERCENT_MULTIPLIER = 100
+
+        private const val YES_FIELD = "Y"
+        private const val NO_FIELD = "N"
     }
 }

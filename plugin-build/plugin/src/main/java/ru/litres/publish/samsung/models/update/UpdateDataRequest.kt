@@ -5,5 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UpdateDataRequest(
     val contentId: String,
-    val binaryList: List<ApkFile>
+    val binaryList: List<ApkFile>,
+    val defaultLanguageCode: String,
+    val paid: String
 )
