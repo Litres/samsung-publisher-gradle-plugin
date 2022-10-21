@@ -98,6 +98,10 @@ samsungPublishConfig {
 ```
 </details>
 
+### Usage
+And finally if your configuration is correct you can use gradle task `samsungPublish` for upload apk
+
+
 ## PublishSetting fields
 
 
