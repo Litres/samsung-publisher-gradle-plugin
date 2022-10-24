@@ -18,8 +18,8 @@ Save `contentId` from link
 <details open><summary>Kotlin</summary>
 
 ```kt
+//app build.gradle.kts
 plugins {
-    id("com.android.application")
     id("ru.litres.plugin.publish.samsung") version "{last_version}"
 }
 ```
@@ -29,12 +29,42 @@ plugins {
 <details><summary>Groovy</summary>
 
 ```groovy
+//app build.gradle.kts
 plugins {
-    id 'com.android.application'
-    id 'ru.litres.plugin.publish.samsung' version '{last_version}'
+    id 'ru.litres.plugin.publish.samsung' version '{latest_version}'
 }
 ```
 
+</details>
+
+<details><summary>Legacy</summary>
+    <details open><summary>Kotlin</summary>
+
+```kt
+   //root build.gradle.kts
+  dependencies {
+    classpath("ru.litres.plugin:plugin:{latest_version}")
+  }
+  
+  //app build.gradle.kts
+  apply(plugin = "ru.litres.plugin.publish.samsung")
+```
+
+</details>
+
+<details><summary>Groovy</summary>
+
+```groovy
+   //root build.gradle.kts
+  dependencies {
+    classpath "ru.litres.plugin:plugin:{latest_version}"
+  }
+  
+  //app build.gradle.kts
+  apply plugin: "ru.litres.plugin.publish.samsung"
+```
+
+</details>
 </details>
 
 ### Common configuration
