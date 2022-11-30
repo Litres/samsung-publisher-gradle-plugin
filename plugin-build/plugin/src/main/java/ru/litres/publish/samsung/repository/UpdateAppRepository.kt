@@ -6,6 +6,7 @@ import com.github.kittinunf.fuel.serialization.kotlinxDeserializerOf
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
+import ru.litres.publish.samsung.DebugSetting
 import ru.litres.publish.samsung.PublishSetting
 import ru.litres.publish.samsung.exception.UploadApkException
 import ru.litres.publish.samsung.models.update.ApkFile
@@ -18,10 +19,10 @@ import java.io.File
 import kotlin.math.roundToInt
 
 class UpdateAppRepository(
+    private val debugSetting: DebugSetting,
     private val networkClient: NetworkClient,
     private val uploadNetworkClient: NetworkClient
 ) {
-
     fun update(apk: File, publishSetting: PublishSetting): Boolean {
         val sessionId = getUploadSessionId()
         val fileKey = uploadApk(sessionId, apk)
@@ -37,6 +38,7 @@ class UpdateAppRepository(
     }
 
     private fun uploadApk(sessionId: String, file: File): String {
+        if (debugSetting.dryMode) return String()
         var prevProgress = 0
         val uploadResult = uploadNetworkClient.upload(UPLOAD_APK, listOf(SESSION_ID_FIELD to sessionId))
             .add { FileDataPart(file, name = "file") }
@@ -66,6 +68,7 @@ class UpdateAppRepository(
         return key
     }
 
+    @Suppress("ReturnCount")
     private fun updateApplication(fileKey: String, publishSetting: PublishSetting): Boolean {
         val contentId = publishSetting.contentId ?: return false
         val paid = if (publishSetting.paid) YES_FIELD else NO_FIELD
@@ -78,6 +81,12 @@ class UpdateAppRepository(
             paid
         )
         val json = Json.encodeToJsonElement(data)
+
+        if (debugSetting.dryMode) {
+            println("Data for update: ")
+            println(data)
+            return true
+        }
 
         val updateResult = networkClient.post(UPDATE_APPLICATION)
             .jsonBody(json.jsonObject.toString())

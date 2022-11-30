@@ -45,7 +45,7 @@ plugins {
   dependencies {
     classpath("ru.litres.plugin:plugin:{latest_version}")
   }
-  
+
   //app build.gradle.kts
   apply(plugin = "ru.litres.plugin.publish.samsung")
 ```
@@ -59,7 +59,7 @@ plugins {
   dependencies {
     classpath "ru.litres.plugin:plugin:{latest_version}"
   }
-  
+
   //app build.gradle.kts
   apply plugin: "ru.litres.plugin.publish.samsung"
 ```
@@ -113,11 +113,11 @@ samsungPublishConfig {
     )
 
     //Service Account ID from service account
-    artifactDir.set(file("./build/output"))
+    serviceAccountId.set("....")
 
     //Directory where plugin should find release apk.
     //Plugin searches by extension .apk and gets first file
-    serviceAccountId.set("....")
+    artifactDir.set(file("./build/output"))
 
     //Object with app setting
     publishSetting {

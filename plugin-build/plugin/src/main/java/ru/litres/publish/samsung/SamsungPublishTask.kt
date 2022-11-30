@@ -23,6 +23,9 @@ abstract class SamsungPublishTask : DefaultTask() {
     @get:Input
     abstract var publishSetting: PublishSetting
 
+    @get:Input
+    abstract var debugSetting: DebugSetting
+
     @Suppress("ThrowsCount")
     @TaskAction
     fun publish() {
@@ -30,6 +33,6 @@ abstract class SamsungPublishTask : DefaultTask() {
         val serviceId = serviceAccountId.orNull ?: throw NotFoundRequiredField("serviceAccountId")
         val folderWithApk = artifactDir.orNull ?: throw NotFoundRequiredField("artifactDir")
         if (publishSetting.contentId == null) throw NotFoundRequiredField("contentId")
-        PublishBuildUseCase().invoke(serviceId, key, folderWithApk, publishSetting)
+        PublishBuildUseCase(debugSetting).invoke(serviceId, key, folderWithApk, publishSetting)
     }
 }

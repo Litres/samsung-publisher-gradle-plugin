@@ -39,4 +39,10 @@ abstract class SamsungPublishExtension @Inject constructor(
     fun publishSetting(action: Action<PublishSetting>) {
         action.execute(publishSetting)
     }
+
+    val debugSetting: DebugSetting = objects.newInstance(DebugSetting::class.java)
+
+    fun debug(action: Action<DebugSetting>) {
+        action.execute(debugSetting)
+    }
 }
