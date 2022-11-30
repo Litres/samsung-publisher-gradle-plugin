@@ -15,4 +15,8 @@ samsungPublishConfig {
     publishSetting {
         contentId = "..."
     }
+
+    debug {
+        dryMode = false
+    }
 }

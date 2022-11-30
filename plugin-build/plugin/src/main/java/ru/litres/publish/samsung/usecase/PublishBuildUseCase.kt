@@ -1,6 +1,7 @@
 package ru.litres.publish.samsung.usecase
 
 import org.gradle.api.file.Directory
+import ru.litres.publish.samsung.DebugSetting
 import ru.litres.publish.samsung.PublishSetting
 import ru.litres.publish.samsung.exception.UploadApkException
 import ru.litres.publish.samsung.network.NetworkClient
@@ -13,6 +14,7 @@ import ru.litres.publish.samsung.utils.UPLOAD_API_BASE_URL
 import java.io.File
 
 class PublishBuildUseCase(
+    private val debugSetting: DebugSetting,
     private val networkClient: NetworkClient = NetworkClient(API_BASE_URL),
     private val uploadNetworkClient: NetworkClient = NetworkClient(UPLOAD_API_BASE_URL),
     private val jwtGenerator: JwtGenerator = JwtGenerator()
@@ -31,7 +33,7 @@ class PublishBuildUseCase(
         uploadNetworkClient.appendCommonHeaders(mapOf(HEADER_SERVICE_ACCOUNT_ID to serviceId))
 
         val generateTokenRepository = GenerateTokenRepository(networkClient, jwtGenerator)
-        val updateAppRepository = UpdateAppRepository(networkClient, uploadNetworkClient)
+        val updateAppRepository = UpdateAppRepository(debugSetting, networkClient, uploadNetworkClient)
 
         val accessToken = generateTokenRepository.getAccessToken(privateKey, serviceId)
         networkClient.setBearerAuth(accessToken)
@@ -46,8 +48,13 @@ class PublishBuildUseCase(
         }
     }
 
+    // if dry mode - return fake file
     private fun Directory.findApkFile(): File {
-        return this.asFileTree.find { it.extension == "apk" }
-            ?: throw UploadApkException("Apk file not found in folder \"${this.asFile.absolutePath}\"")
+        return asFileTree.find { it.extension == "apk" }
+            ?: if (debugSetting.dryMode) {
+                File("/")
+            } else {
+                throw UploadApkException("Apk file not found in folder \"${this.asFile.absolutePath}\"")
+            }
     }
 }

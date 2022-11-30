@@ -10,8 +10,6 @@ import java.io.StringReader
 import java.security.KeyFactory
 import java.security.spec.RSAPrivateCrtKeySpec
 import javax.management.openmbean.InvalidKeyException
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 class JwtGenerator {
 
@@ -23,15 +21,15 @@ class JwtGenerator {
         val kf = KeyFactory.getInstance("RSA")
         val key = kf.generatePrivate(keySpec)
 
-        val currentTime = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
-        val expTime = currentTime.plus(TIME_TOKEN_ALIVE.toDuration(DurationUnit.MINUTES))
+        val currentTime = System.currentTimeMillis().millisToSecond()
+        val expTime = currentTime + TIME_TOKEN_ALIVE
 
         return Jwts.builder()
             .signWith(key, SignatureAlgorithm.RS256)
             .claim(CLAIM_ISS, serviceAccountId)
             .claim(CLAIM_SCOPES, arrayOf(PUBLISHING_SCOPE))
-            .claim(CLAIM_IAT, currentTime.inWholeSeconds)
-            .claim(CLAIM_EXP, expTime.inWholeSeconds)
+            .claim(CLAIM_IAT, currentTime)
+            .claim(CLAIM_EXP, expTime)
             .compact()
     }
 
@@ -82,6 +80,8 @@ class JwtGenerator {
         )
     }
 
+    private fun Long.millisToSecond() = this / MILLIS_IN_SECOND
+
     companion object {
         private const val PUBLISHING_SCOPE = "publishing"
 
@@ -95,7 +95,9 @@ class JwtGenerator {
         // expiration time in second
         private const val CLAIM_EXP = "exp"
 
-        // min
-        private const val TIME_TOKEN_ALIVE = 15
+        // seconds
+        private const val TIME_TOKEN_ALIVE = 15 * 60 // 15 min
+
+        private const val MILLIS_IN_SECOND = 1000
     }
 }
