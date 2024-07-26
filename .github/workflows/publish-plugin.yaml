@@ -23,7 +23,7 @@ jobs:
         run: echo "RELEASE_VERSION="${{ steps.get_version.outputs.version-without-v }} >> $GITHUB_ENV
 
       - name: Cache Gradle Caches
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
 
       - name: Run Gradle tasks
         run: ./gradlew preMerge --continue
