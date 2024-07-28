@@ -8,5 +8,5 @@ data class UploadResponse(
     val fileName: String?,
     val fileSize: String?,
     val errorCode: String?,
-    val errorMsg: String?
+    val errorMsg: String?,
 )

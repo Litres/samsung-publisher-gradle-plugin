@@ -4,12 +4,11 @@ import java.io.IOException
 import java.math.BigInteger
 
 /**
- * An ASN.1 TLV. The object is not parsed. It can
- * only handle integers and strings.
+ *  * An ASN.1 TLV. The object is not parsed. It can
+ *  * only handle integers and strings.
+ *  *
+ *  * @author zhang
  *
- * @author zhang
- */
-/**
  * Construct an ASN.1 TLV. The TLV could be either a
  * constructed or primitive entity.
  *
@@ -36,7 +35,7 @@ import java.math.BigInteger
  */
 open class Asn1Object(
     private val tag: Int,
-    private val value: ByteArray
+    private val value: ByteArray,
 ) {
     val type: Int = tag and 0x1F
 
@@ -92,7 +91,8 @@ open class Asn1Object(
                     DerParser.IA5_STRING,
                     DerParser.GRAPHIC_STRING,
                     DerParser.ISO646_STRING,
-                    DerParser.GENERAL_STRING -> "ISO-8859-1" // $NON-NLS-1$
+                    DerParser.GENERAL_STRING,
+                    -> "ISO-8859-1" // $NON-NLS-1$
                     DerParser.BMP_STRING -> "UTF-16BE" // $NON-NLS-1$
                     DerParser.UTF8_STRING -> "UTF-8" // $NON-NLS-1$
                     DerParser.UNIVERSAL_STRING -> {

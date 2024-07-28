@@ -4,9 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UpdateDataResponse(
-    val ctntId: String?,
+    val contentId: String?,
     val contentStatus: String?,
     val httpStatus: String?,
     val errorCode: String?,
-    val errorMsg: String?
+    val errorMsg: String?,
 )

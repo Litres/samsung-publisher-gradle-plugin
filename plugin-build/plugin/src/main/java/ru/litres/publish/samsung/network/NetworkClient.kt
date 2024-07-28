@@ -10,16 +10,16 @@ import com.github.kittinunf.fuel.core.interceptors.LogRequestInterceptor
 import com.github.kittinunf.fuel.core.interceptors.LogResponseInterceptor
 
 class NetworkClient(
-    baseUrl: String
+    baseUrl: String,
 ) {
-
     private var authToken: String? = null
 
-    private val fuelManager = FuelManager().apply {
-        basePath = baseUrl
-        this.timeoutInMillisecond = TIMEOUT
-        this.timeoutReadInMillisecond = TIMEOUT
-    }
+    private val fuelManager =
+        FuelManager().apply {
+            basePath = baseUrl
+            this.timeoutInMillisecond = TIMEOUT
+            this.timeoutReadInMillisecond = TIMEOUT
+        }
 
     init {
         addRequestInterceptor(LogRequestInterceptor)
@@ -28,17 +28,17 @@ class NetworkClient(
 
     fun get(
         path: String,
-        parameters: Parameters? = null
+        parameters: Parameters? = null,
     ) = fuelManager.get(path, parameters)
 
     fun post(
         path: String,
-        parameters: Parameters? = null
+        parameters: Parameters? = null,
     ) = fuelManager.post(path, parameters)
 
     fun upload(
         path: String,
-        parameters: Parameters?
+        parameters: Parameters?,
     ) = fuelManager.upload(path, Method.POST, parameters)
 
     fun appendCommonHeaders(headers: Map<String, String>) {

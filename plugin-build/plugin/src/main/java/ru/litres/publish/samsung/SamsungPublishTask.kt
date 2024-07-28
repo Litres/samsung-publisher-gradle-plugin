@@ -10,7 +10,6 @@ import ru.litres.publish.samsung.exception.NotFoundRequiredField
 import ru.litres.publish.samsung.usecase.PublishBuildUseCase
 
 abstract class SamsungPublishTask : DefaultTask() {
-
     @get:Internal("Directory mapped to a useful set of files later")
     abstract val artifactDir: DirectoryProperty
 

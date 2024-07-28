@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AccessTokenResponse(
     val ok: Boolean,
-    val createdItem: AccessToken?
+    val createdItem: AccessToken?,
 )

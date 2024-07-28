@@ -41,7 +41,8 @@ open class DerParser
  * Create a new DER decoder from an input stream.
  *
  * @param input The DER encoded stream
- */(private var input: InputStream) {
+ */
+(private var input: InputStream) {
     /**
      * Create a new DER decoder from a byte array.
      *
@@ -76,6 +77,7 @@ open class DerParser
     // A single byte short length
 
     // We can't handle length longer than 4 bytes
+
     /**
      * Decode the length of the field. Can only support length
      * encoding up to 4 octets.

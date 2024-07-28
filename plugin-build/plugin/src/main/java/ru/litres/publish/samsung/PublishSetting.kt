@@ -1,7 +1,6 @@
 package ru.litres.publish.samsung
 
 open class PublishSetting {
-
     /**
      * Id your application
      */
