@@ -3,7 +3,6 @@ package ru.litres.publish.samsung.repository
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.serialization.kotlinxDeserializerOf
-import com.github.kittinunf.result.getOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -106,7 +105,14 @@ class UpdateAppRepository(
                 .jsonBody(json.jsonObject.toString())
                 .responseObject<UpdateDataResponse>(kotlinxDeserializerOf())
 
-        val updateResponse = updateResult.third.getOrNull()
+        val updateResponse =
+            updateResult.third.fold(
+                success = { it },
+                failure = {
+                    println(it)
+                    null
+                },
+            )
         if (updateResponse?.errorMsg != null) throw UploadApkException(updateResponse.errorMsg)
 
         return updateResponse?.contentStatus == SUCCESS_UPDATE_APK_RESULT
