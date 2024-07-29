@@ -12,10 +12,13 @@ import java.security.spec.RSAPrivateCrtKeySpec
 import javax.management.openmbean.InvalidKeyException
 
 class JwtGenerator {
-
-    fun generate(privateKey: String, serviceAccountId: String): String {
-        val bas64ByteArrayKey = privateKey.getBase64ByteFromPrivateKeyString()
-            ?: throw InvalidKeyException("Provided private key is invalid")
+    fun generate(
+        privateKey: String,
+        serviceAccountId: String,
+    ): String {
+        val bas64ByteArrayKey =
+            privateKey.getBase64ByteFromPrivateKeyString()
+                ?: throw InvalidKeyException("Provided private key is invalid")
 
         val keySpec = getRSAKeySpec(bas64ByteArrayKey)
         val kf = KeyFactory.getInstance("RSA")
@@ -76,7 +79,7 @@ class JwtGenerator {
             prime2,
             exp1,
             exp2,
-            crtCoef
+            crtCoef,
         )
     }
 

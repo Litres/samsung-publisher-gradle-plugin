@@ -9,3 +9,5 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 build
+/plugin-build/.kotlin/
+.kotlin

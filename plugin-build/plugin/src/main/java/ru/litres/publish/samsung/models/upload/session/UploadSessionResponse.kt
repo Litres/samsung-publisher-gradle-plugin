@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UploadSessionResponse(
     val url: String?,
-    val sessionId: String?
+    val sessionId: String?,
 )

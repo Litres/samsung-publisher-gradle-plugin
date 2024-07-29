@@ -17,13 +17,13 @@ class PublishBuildUseCase(
     private val debugSetting: DebugSetting,
     private val networkClient: NetworkClient = NetworkClient(API_BASE_URL),
     private val uploadNetworkClient: NetworkClient = NetworkClient(UPLOAD_API_BASE_URL),
-    private val jwtGenerator: JwtGenerator = JwtGenerator()
+    private val jwtGenerator: JwtGenerator = JwtGenerator(),
 ) {
     operator fun invoke(
         serviceId: String,
         privateKey: String,
         artifactDir: Directory,
-        publishSetting: PublishSetting
+        publishSetting: PublishSetting,
     ) {
         val apk = artifactDir.findApkFile()
         println("------ Found apk -------")

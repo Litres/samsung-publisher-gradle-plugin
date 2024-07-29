@@ -7,5 +7,5 @@ data class UpdateDataRequest(
     val contentId: String,
     val binaryList: List<ApkFile>,
     val defaultLanguageCode: String,
-    val paid: String
+    val paid: String,
 )

@@ -21,46 +21,54 @@ import kotlin.math.roundToInt
 class UpdateAppRepository(
     private val debugSetting: DebugSetting,
     private val networkClient: NetworkClient,
-    private val uploadNetworkClient: NetworkClient
+    private val uploadNetworkClient: NetworkClient,
 ) {
-    fun update(apk: File, publishSetting: PublishSetting): Boolean {
+    fun update(
+        apk: File,
+        publishSetting: PublishSetting,
+    ): Boolean {
         val sessionId = getUploadSessionId()
         val fileKey = uploadApk(sessionId, apk)
         return updateApplication(fileKey, publishSetting)
     }
 
     private fun getUploadSessionId(): String {
-        val sessionResult = networkClient.post(CREATE_UPLOAD_SESSION)
-            .responseObject<UploadSessionResponse>(kotlinxDeserializerOf())
+        val sessionResult =
+            networkClient.post(CREATE_UPLOAD_SESSION)
+                .responseObject<UploadSessionResponse>(kotlinxDeserializerOf())
 
         return sessionResult.third.get().sessionId
             ?: throw UploadApkException("Field \"sessionId\" not found in \"/seller/createUploadSessionId\"")
     }
 
-    private fun uploadApk(sessionId: String, file: File): String {
+    private fun uploadApk(
+        sessionId: String,
+        file: File,
+    ): String {
         if (debugSetting.dryMode) return String()
         var prevProgress = 0
-        val uploadResult = uploadNetworkClient.upload(UPLOAD_APK, listOf(SESSION_ID_FIELD to sessionId))
-            .add { FileDataPart(file, name = "file") }
-            .progress { readBytes, totalBytes ->
-                val progress = (readBytes.toFloat() / totalBytes.toFloat() * PERCENT_MULTIPLIER).roundToInt()
-                if (progress != prevProgress) {
-                    val readyMb = readBytes / KB_DIVIDER
-                    val totalMb = totalBytes / KB_DIVIDER
-                    println("Uploaded ${readyMb}kb / ${totalMb}kb ($progress %)")
+        val uploadResult =
+            uploadNetworkClient.upload(UPLOAD_APK, listOf(SESSION_ID_FIELD to sessionId))
+                .add { FileDataPart(file, name = "file") }
+                .progress { readBytes, totalBytes ->
+                    val progress = (readBytes.toFloat() / totalBytes.toFloat() * PERCENT_MULTIPLIER).roundToInt()
+                    if (progress != prevProgress) {
+                        val readyMb = readBytes / KB_DIVIDER
+                        val totalMb = totalBytes / KB_DIVIDER
+                        println("Uploaded ${readyMb}kb / ${totalMb}kb ($progress %)")
+                    }
+                    prevProgress = progress
                 }
-                prevProgress = progress
-            }
-            .responseObject<UploadResponse>(kotlinxDeserializerOf())
+                .responseObject<UploadResponse>(kotlinxDeserializerOf())
 
-        val uploadResponse = uploadResult.third.fold(
-            success = { it },
-            failure = { error ->
-                println(error)
-                println(error.errorData.decodeToString())
-                null
-            }
-        )
+        val uploadResponse =
+            uploadResult.third.fold(
+                success = { it },
+                failure = { error ->
+                    println(error)
+                    null
+                },
+            )
 
         if (uploadResponse?.errorMsg != null) throw UploadApkException(uploadResponse.errorMsg)
         val key = uploadResponse?.fileKey
@@ -69,17 +77,21 @@ class UpdateAppRepository(
     }
 
     @Suppress("ReturnCount")
-    private fun updateApplication(fileKey: String, publishSetting: PublishSetting): Boolean {
+    private fun updateApplication(
+        fileKey: String,
+        publishSetting: PublishSetting,
+    ): Boolean {
         val contentId = publishSetting.contentId ?: return false
         val paid = if (publishSetting.paid) YES_FIELD else NO_FIELD
         val gms = if (publishSetting.hasGoogleService) YES_FIELD else NO_FIELD
 
-        val data = UpdateDataRequest(
-            contentId,
-            listOf(ApkFile(fileKey, gms)),
-            publishSetting.defaultLanguageCode,
-            paid
-        )
+        val data =
+            UpdateDataRequest(
+                contentId,
+                listOf(ApkFile(fileKey, gms)),
+                publishSetting.defaultLanguageCode,
+                paid,
+            )
         val json = Json.encodeToJsonElement(data)
 
         if (debugSetting.dryMode) {
@@ -88,17 +100,19 @@ class UpdateAppRepository(
             return true
         }
 
-        val updateResult = networkClient.post(UPDATE_APPLICATION)
-            .jsonBody(json.jsonObject.toString())
-            .responseObject<UpdateDataResponse>(kotlinxDeserializerOf())
+        val updateResult =
+            networkClient.post(UPDATE_APPLICATION)
+                .jsonBody(json.jsonObject.toString())
+                .responseObject<UpdateDataResponse>(kotlinxDeserializerOf())
 
-        val updateResponse = updateResult.third.fold(
-            success = { it },
-            failure = {
-                println(it.errorData.decodeToString())
-                null
-            }
-        )
+        val updateResponse =
+            updateResult.third.fold(
+                success = { it },
+                failure = {
+                    println(it)
+                    null
+                },
+            )
         if (updateResponse?.errorMsg != null) throw UploadApkException(updateResponse.errorMsg)
 
         return updateResponse?.contentStatus == SUCCESS_UPDATE_APK_RESULT
