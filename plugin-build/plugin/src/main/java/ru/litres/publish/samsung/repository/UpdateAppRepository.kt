@@ -10,6 +10,7 @@ import ru.litres.publish.samsung.DebugSetting
 import ru.litres.publish.samsung.PublishSetting
 import ru.litres.publish.samsung.exception.UploadApkException
 import ru.litres.publish.samsung.models.update.ApkFile
+import ru.litres.publish.samsung.models.update.SubmitReviewRequest
 import ru.litres.publish.samsung.models.update.UpdateDataRequest
 import ru.litres.publish.samsung.models.update.UpdateDataResponse
 import ru.litres.publish.samsung.models.upload.UploadResponse
@@ -30,6 +31,10 @@ class UpdateAppRepository(
         val sessionId = getUploadSessionId()
         val fileKey = uploadApk(sessionId, apk)
         return updateApplication(fileKey, publishSetting)
+    }
+
+    fun submitReview(publishSetting: PublishSetting): Boolean {
+        return submitReviewApplication(publishSetting)
     }
 
     private fun getUploadSessionId(): String {
@@ -118,13 +123,38 @@ class UpdateAppRepository(
         return updateResponse?.contentStatus == SUCCESS_UPDATE_APK_RESULT
     }
 
+    @Suppress("ReturnCount")
+    private fun submitReviewApplication(publishSetting: PublishSetting): Boolean {
+        val contentId = publishSetting.contentId ?: return false
+        val data =
+            SubmitReviewRequest(
+                contentId,
+            )
+        val json = Json.encodeToJsonElement(data)
+
+        if (debugSetting.dryMode) {
+            println("Data for submit review: ")
+            println(json)
+            return true
+        }
+
+        val submitReviewResult =
+            networkClient.post(SUBMIT_APPLICATION)
+                .jsonBody(json.jsonObject.toString())
+                .response()
+
+        return submitReviewResult.second.statusCode in SUCCESS_STATUS_CODES
+    }
+
     companion object {
         private const val CREATE_UPLOAD_SESSION = "/seller/createUploadSessionId"
         private const val UPLOAD_APK = "/galaxyapi/fileUpload"
         private const val UPDATE_APPLICATION = "/seller/contentUpdate"
+        private const val SUBMIT_APPLICATION = "/seller/contentSubmit"
 
         private const val SESSION_ID_FIELD = "sessionId"
         private const val SUCCESS_UPDATE_APK_RESULT = "REGISTERING"
+        private val SUCCESS_STATUS_CODES = setOf(200, 204)
 
         private const val KB_DIVIDER = 1024
         private const val PERCENT_MULTIPLIER = 100
