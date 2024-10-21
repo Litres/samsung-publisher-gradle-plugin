@@ -46,6 +46,15 @@ class PublishBuildUseCase(
         } else {
             println("-------- Error while updating apk ----------")
         }
+
+        if (success && publishSetting.submitReview) {
+            val submitReviewSuccess = updateAppRepository.submitReview(publishSetting)
+            if (submitReviewSuccess) {
+                println("-------- Success submit review ----------")
+            } else {
+                println("-------- Error while submit review ----------")
+            }
+        }
     }
 
     // if dry mode - return fake file

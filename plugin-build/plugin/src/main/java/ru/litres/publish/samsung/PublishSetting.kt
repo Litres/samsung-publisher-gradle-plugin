@@ -19,6 +19,11 @@ open class PublishSetting {
     var paid: Boolean = false
 
     /**
+     * Whether app is submitted for review after uploading
+     */
+    var submitReview: Boolean = false
+
+    /**
      * App has Google service or not
      */
     var hasGoogleService: Boolean = true
