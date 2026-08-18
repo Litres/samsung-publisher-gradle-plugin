@@ -9,7 +9,8 @@ import kotlinx.serialization.json.jsonObject
 import ru.litres.publish.samsung.DebugSetting
 import ru.litres.publish.samsung.PublishSetting
 import ru.litres.publish.samsung.exception.UploadApkException
-import ru.litres.publish.samsung.models.update.ApkFile
+import ru.litres.publish.samsung.models.update.AddBinaryRequest
+import ru.litres.publish.samsung.models.update.AddBinaryResponse
 import ru.litres.publish.samsung.models.update.SubmitReviewRequest
 import ru.litres.publish.samsung.models.update.UpdateDataRequest
 import ru.litres.publish.samsung.models.update.UpdateDataResponse
@@ -24,13 +25,24 @@ class UpdateAppRepository(
     private val networkClient: NetworkClient,
     private val uploadNetworkClient: NetworkClient,
 ) {
+    /**
+     * publish flow:
+     *   1. create upload session
+     *   2. upload the apk -> fileKey
+     *   3. contentUpdate with metadata only -> moves the app into REGISTERING state
+     *   4. add the uploaded binary via POST /seller/v2/content/binary
+     */
     fun update(
         apk: File,
         publishSetting: PublishSetting,
     ): Boolean {
         val sessionId = getUploadSessionId()
         val fileKey = uploadApk(sessionId, apk)
-        return updateApplication(fileKey, publishSetting)
+
+        val metadataUpdated = updateApplication(publishSetting)
+        if (!metadataUpdated) return false
+
+        return addBinary(fileKey, publishSetting)
     }
 
     fun submitReview(publishSetting: PublishSetting): Boolean {
@@ -82,20 +94,15 @@ class UpdateAppRepository(
     }
 
     @Suppress("ReturnCount")
-    private fun updateApplication(
-        fileKey: String,
-        publishSetting: PublishSetting,
-    ): Boolean {
+    private fun updateApplication(publishSetting: PublishSetting): Boolean {
         val contentId = publishSetting.contentId ?: return false
         val paid = if (publishSetting.paid) YES_FIELD else NO_FIELD
-        val gms = if (publishSetting.hasGoogleService) YES_FIELD else NO_FIELD
-
         val data =
             UpdateDataRequest(
-                contentId,
-                listOf(ApkFile(fileKey, gms)),
-                publishSetting.defaultLanguageCode,
-                paid,
+                contentId = contentId,
+                defaultLanguageCode = publishSetting.defaultLanguageCode,
+                paid = paid,
+                publicationType = publishSetting.publicationType.code,
             )
         val json = Json.encodeToJsonElement(data)
 
@@ -121,6 +128,51 @@ class UpdateAppRepository(
         if (updateResponse?.errorMsg != null) throw UploadApkException(updateResponse.errorMsg)
 
         return updateResponse?.contentStatus == SUCCESS_UPDATE_APK_RESULT
+    }
+
+    @Suppress("ReturnCount")
+    private fun addBinary(
+        fileKey: String,
+        publishSetting: PublishSetting,
+    ): Boolean {
+        val contentId = publishSetting.contentId ?: return false
+        val gms = if (publishSetting.hasGoogleService) YES_FIELD else NO_FIELD
+
+        val data =
+            AddBinaryRequest(
+                contentId = contentId,
+                filekey = fileKey,
+                gms = gms,
+            )
+        val json = Json.encodeToJsonElement(data)
+
+        if (debugSetting.dryMode) {
+            println("Data for add binary: ")
+            println(data)
+            return true
+        }
+
+        val addBinaryResult =
+            networkClient.post(ADD_BINARY)
+                .jsonBody(json.jsonObject.toString())
+                .responseObject<AddBinaryResponse>(kotlinxDeserializerOf())
+
+        val addBinaryResponse =
+            addBinaryResult.third.fold(
+                success = { it },
+                failure = {
+                    println(it)
+                    null
+                },
+            )
+
+        if (addBinaryResponse == null) return false
+        if (addBinaryResponse.resultCode != SUCCESS_ADD_BINARY_RESULT) {
+            throw UploadApkException(
+                "Add binary failed: ${addBinaryResponse.resultCode} ${addBinaryResponse.resultMessage}",
+            )
+        }
+        return true
     }
 
     @Suppress("ReturnCount")
@@ -150,10 +202,12 @@ class UpdateAppRepository(
         private const val CREATE_UPLOAD_SESSION = "/seller/createUploadSessionId"
         private const val UPLOAD_APK = "/galaxyapi/fileUpload"
         private const val UPDATE_APPLICATION = "/seller/contentUpdate"
+        private const val ADD_BINARY = "/seller/v2/content/binary"
         private const val SUBMIT_APPLICATION = "/seller/contentSubmit"
 
         private const val SESSION_ID_FIELD = "sessionId"
         private const val SUCCESS_UPDATE_APK_RESULT = "REGISTERING"
+        private const val SUCCESS_ADD_BINARY_RESULT = "0000"
         private val SUCCESS_STATUS_CODES = setOf(200, 204)
 
         private const val KB_DIVIDER = 1024

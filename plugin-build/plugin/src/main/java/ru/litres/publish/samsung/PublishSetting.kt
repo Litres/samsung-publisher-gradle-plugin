@@ -24,6 +24,12 @@ open class PublishSetting {
     var submitReview: Boolean = false
 
     /**
+     * When the app is published, once it has passed the review.
+     * Note that contentUpdate overwrites whatever is set in Seller Portal.
+     */
+    var publicationType: PublicationType = PublicationType.MANUAL
+
+    /**
      * App has Google service or not
      */
     var hasGoogleService: Boolean = true
