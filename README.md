@@ -143,3 +143,66 @@ And finally if your configuration is correct you can use gradle task `samsungPub
 | hasGoogleService  | Boolean |                                                                                                      Whether the app provides the user with any Google™ services                                                                                                      |          true |
 | submitReview  | Boolean |                                                                                                      Whether app is submitted for review after uploading                                                                                                      |          false |
 | publicationType  | PublicationType | When the app is published, once it has passed the review: `AUTOMATIC` — right after the pre-review phase, `MANUAL` — you publish it yourself from Seller Portal. Note that this value overwrites the one stored in Seller Portal |          MANUAL |
+
+
+## Network setting
+
+Uploading happens against `seller.samsungapps.com`, which is a different host (and a different CDN)
+than the rest of the API. If that host is unreachable from your build agent the upload fails with a
+connect timeout — see [#7](https://github.com/Litres/samsung-publisher-gradle-plugin/issues/7).
+The `networkSetting` block lets you tune timeouts, retries and egress without patching the plugin.
+
+<details open><summary>Kotlin</summary>
+
+```kt
+samsungPublishConfig {
+    // ...
+
+    networkSetting {
+        //fail fast when the upload host is unreachable
+        connectTimeoutMs = 20_000
+
+        //Galaxy Store scans the binary before answering, so give the upload call room
+        uploadReadTimeoutMs = 900_000
+
+        //a retry is often served by another CDN edge node
+        uploadAttempts = 3
+        uploadRetryDelayMs = 5_000
+
+        //route the calls through a proxy, "host:port" or "scheme://host:port"
+        proxy = "proxy.example.com:3128"
+    }
+}
+```
+
+</details>
+
+<details><summary>Groovy</summary>
+
+```groovy
+samsungPublishConfig {
+    // ...
+
+    networkSetting {
+        connectTimeoutMs = 20_000
+        uploadReadTimeoutMs = 900_000
+        uploadAttempts = 3
+        uploadRetryDelayMs = 5_000
+        proxy = "proxy.example.com:3128"
+    }
+}
+```
+
+</details>
+
+### NetworkSetting fields
+
+| Field | Type | Description | Default value |
+| :--- | :---: | :---: | ---: |
+| connectTimeoutMs | Int | Timeout of the TCP connect phase. A connection that is not established within this window will not be established at all | 20 000 |
+| readTimeoutMs | Int | Response timeout for the small json calls of the publish API | 120 000 |
+| uploadReadTimeoutMs | Int | Response timeout for `/galaxyapi/fileUpload`. Galaxy Store accepts the whole binary and scans it before answering | 900 000 |
+| uploadAttempts | Int | How many times the apk upload is attempted. Only transport failures, `408`, `429` and `5xx` answers are retried | 3 |
+| uploadRetryDelayMs | Long | Pause before the first retry, doubled on every further attempt | 5 000 |
+| proxy | String? | Proxy for every call, `host:port` or `scheme://host:port`. `null` keeps the JVM defaults, so `-Dhttps.proxyHost` still works | null |
+| uploadUrl | String? | Overrides the upload url returned by `/seller/createUploadSessionId`. `null` means the url from the session response is used, and such a url is only followed when it points at a `samsungapps.com` host, since the upload carries the access token | null |

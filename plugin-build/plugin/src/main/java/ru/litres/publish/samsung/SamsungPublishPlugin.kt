@@ -18,6 +18,7 @@ class SamsungPublishPlugin : Plugin<Project> {
             it.serviceAccountId.set(extension.serviceAccountId)
             it.publishSetting = extension.publishSetting
             it.debugSetting = extension.debugSetting
+            it.networkSetting = extension.networkSetting
         }
     }
 }

@@ -8,17 +8,22 @@ import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.Parameters
 import com.github.kittinunf.fuel.core.interceptors.LogRequestInterceptor
 import com.github.kittinunf.fuel.core.interceptors.LogResponseInterceptor
+import java.net.Proxy
 
 class NetworkClient(
     baseUrl: String,
+    connectTimeoutMs: Int = DEFAULT_CONNECT_TIMEOUT_MS,
+    readTimeoutMs: Int = DEFAULT_READ_TIMEOUT_MS,
+    proxy: Proxy? = null,
 ) {
     private var authToken: String? = null
 
     private val fuelManager =
         FuelManager().apply {
             basePath = baseUrl
-            this.timeoutInMillisecond = TIMEOUT
-            this.timeoutReadInMillisecond = TIMEOUT
+            this.timeoutInMillisecond = connectTimeoutMs
+            this.timeoutReadInMillisecond = readTimeoutMs
+            this.proxy = proxy
         }
 
     init {
@@ -63,6 +68,21 @@ class NetworkClient(
     }
 
     companion object {
-        private const val TIMEOUT = 120_000
+        /**
+         * Timeout of the TCP connect phase only.
+         * A connection that is not established within this window will not be established at all,
+         * so a short value turns an unreachable host into a fast failure instead of a long hang.
+         */
+        const val DEFAULT_CONNECT_TIMEOUT_MS = 20_000
+
+        /** Response timeout for the small json calls of the publish api. */
+        const val DEFAULT_READ_TIMEOUT_MS = 120_000
+
+        /**
+         * Response timeout for "/galaxyapi/fileUpload".
+         * Galaxy Store accepts the whole binary and scans it before answering,
+         * so a multi hundred megabyte apk needs far more than the default.
+         */
+        const val UPLOAD_READ_TIMEOUT_MS = 900_000
     }
 }

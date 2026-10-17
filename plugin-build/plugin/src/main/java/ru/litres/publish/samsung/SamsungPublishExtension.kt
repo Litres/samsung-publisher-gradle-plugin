@@ -47,4 +47,11 @@ abstract class SamsungPublishExtension
         fun debug(action: Action<DebugSetting>) {
             action.execute(debugSetting)
         }
+
+        /** Timeouts, retries and proxy used for every call to the store */
+        val networkSetting: NetworkSetting = objects.newInstance(NetworkSetting::class.java)
+
+        fun networkSetting(action: Action<NetworkSetting>) {
+            action.execute(networkSetting)
+        }
     }
